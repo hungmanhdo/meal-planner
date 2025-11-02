@@ -145,6 +145,19 @@ function updateModalHeader(mealType) {
     const mealGoal = getMealExchangeGoal(mealType);
     const remaining = Math.max(0, mealGoal - exchangeCount);
     
+    // Check if we're over the maximum (shouldn't happen with the fix, but display it properly if it does)
+    const isOverLimit = exchangeCount > mealGoal;
+    
+    // Get the current exchange maximums
+    const currentGoalObj = dailyGoals[currentGoal];
+    const isSnack = mealType.startsWith('snack');
+    
+    // Create maximum exchange limits for this meal type
+    const exchangeMaximums = {};
+    Object.keys(currentGoalObj).forEach(type => {
+        exchangeMaximums[type] = isSnack ? Math.ceil(currentGoalObj[type] / 2) : currentGoalObj[type];
+    });
+    
     // Create goal progress element if it doesn't exist
     let goalProgress = document.getElementById('modalGoalProgress');
     if (!goalProgress) {
@@ -158,13 +171,30 @@ function updateModalHeader(mealType) {
     const mealName = mealType.charAt(0).toUpperCase() + mealType.slice(1);
     const status = getMealProgressStatus(exchangeCount, mealGoal);
     
+    // Create exchange limit tags
+    const exchangeLimits = Object.entries(exchangeMaximums)
+        .filter(([_, max]) => max > 0)
+        .map(([type, max]) => {
+            const current = totalExchanges[type] || 0;
+            const isAtLimit = current >= max;
+            return `<span class="exchange-limit ${type} ${isAtLimit ? 'at-limit' : ''}">${current}/${max}${type}</span>`;
+        })
+        .join('');
+    
     goalProgress.innerHTML = `
         <div class="goal-progress-bar">
             <div class="goal-progress-fill ${status}" style="width: ${Math.min(100, (exchangeCount / mealGoal) * 100)}%"></div>
         </div>
         <div class="goal-progress-text">
-            <span class="current">${exchangeCount}</span>/<span class="goal">${mealGoal}</span> exchanges
-            ${remaining > 0 ? `<span class="remaining">(${remaining} more needed)</span>` : '<span class="complete">✓ Goal complete!</span>'}
+            <span class="current ${isOverLimit ? 'over-limit' : ''}">${exchangeCount}</span>/<span class="goal">${mealGoal}</span> exchanges
+            ${isOverLimit ? '<span class="over-limit-warning">(exceeds maximum)</span>' : 
+              remaining > 0 ? `<span class="remaining">(${remaining} more needed)</span>` : 
+                             '<span class="complete">✓ Goal complete!</span>'}
+        </div>
+        <div class="exchange-limits">
+            <div class="limits-label">Maximum exchanges:</div>
+            <div class="limits-tags">${exchangeLimits}</div>
+            <div class="total-limit ${isOverLimit ? 'over-limit' : ''}">Total: <strong>${exchangeCount}/${mealGoal}</strong></div>
         </div>
     `;
     
@@ -288,6 +318,284 @@ function addFoodToMealWithQuantity(btn) {
     const food = card.foodData;
     
     addFoodToMeal(food, quantity);
+}
+
+// Generate Random Meal
+function generateRandomMeal() {
+    // Show loading state in modal
+    const foodGrid = document.getElementById('foodGrid');
+    foodGrid.innerHTML = '<div class="empty-state loading"><p>Generating random meal...</p></div>';
+    
+    // Get the current meal type and its exchange goal
+    const mealGoal = getMealExchangeGoal(currentMeal);
+    const currentGoalObj = dailyGoals[currentGoal];
+    
+    // Create a weighted exchange goal for this meal
+    // These are the MAXIMUM values for each exchange type that shouldn't be exceeded
+    const exchangeMaximums = {
+        G: currentGoalObj.G,
+        P: currentGoalObj.P,
+        D: currentGoalObj.D,
+        FR: currentGoalObj.FR,
+        V: currentGoalObj.V,
+        FA: currentGoalObj.FA
+    };
+    
+    // Adjust the exchange goal based on meal type (e.g. snacks have fewer exchanges)
+    const isSnack = currentMeal.startsWith('snack');
+    if (isSnack) {
+        // Snacks should have fewer exchanges, about half of regular meals
+        Object.keys(exchangeMaximums).forEach(type => {
+            exchangeMaximums[type] = Math.ceil(exchangeMaximums[type] / 2);
+        });
+    }
+    
+    // Get all foods from the database
+    const allFoods = [
+        ...foodDatabase.breakfast,
+        ...foodDatabase.lunchDinner,
+        ...foodDatabase.sides,
+        ...foodDatabase.snacks,
+        ...foodDatabase.desserts,
+        ...foodDatabase.condiments,
+        ...foodDatabase.beverages
+    ];
+    
+    // Create food category preferences based on meal type
+    let foodCategoryPreferences = [];
+    if (currentMeal === 'breakfast') {
+        foodCategoryPreferences = ['breakfast', 'beverages', 'sides'];
+    } else if (currentMeal === 'lunch' || currentMeal === 'dinner') {
+        foodCategoryPreferences = ['lunchDinner', 'sides', 'beverages'];
+    } else {
+        // For snacks
+        foodCategoryPreferences = ['snacks', 'desserts', 'beverages'];
+    }
+    
+    // Track what we've added so far
+    const addedExchanges = { G: 0, P: 0, D: 0, FR: 0, V: 0, FA: 0 };
+    const selectedFoods = [];
+    
+    // Function to check if adding a food would exceed any maximum exchange limit
+    const wouldExceedMaximum = (food) => {
+        // Calculate the current total exchanges
+        const currentTotalExchanges = Object.values(addedExchanges).reduce((sum, val) => sum + val, 0);
+        
+        // Calculate how many exchanges this food would add
+        const foodExchangeCount = Object.values(food.exchanges).reduce((sum, val) => sum + val, 0);
+        
+        // Check if adding this food would exceed the total meal exchange limit
+        if (currentTotalExchanges + foodExchangeCount > mealGoal) {
+            return true;
+        }
+        
+        // Check each exchange type in the food
+        for (const [type, count] of Object.entries(food.exchanges)) {
+            // If adding this food would exceed the maximum for this type, return true
+            if (addedExchanges[type] + count > exchangeMaximums[type]) {
+                return true;
+            }
+        }
+        
+        // If no maximums would be exceeded, return false
+        return false;
+    };
+    
+    // Function to check if we've met all goals (without exceeding maximums)
+    const isGoalMet = () => {
+        // Sum all exchanges to check if we've met the total goal
+        const totalAdded = Object.values(addedExchanges).reduce((sum, val) => sum + val, 0);
+        
+        // Check if we've reached at least 75% of the meal goal, but not exceeding 100%
+        // This gives us some flexibility while ensuring we don't go over
+        if (totalAdded < Math.ceil(mealGoal * 0.75) || totalAdded > mealGoal) {
+            return false;
+        }
+        
+        // For each exchange type that has a non-zero maximum, check if we're at least at 70% of the maximum
+        // This ensures we get close to the goals without requiring exact matches
+        let hasEnoughOfEachType = true;
+        for (const type of Object.keys(exchangeMaximums)) {
+            if (exchangeMaximums[type] > 0 && addedExchanges[type] < Math.ceil(exchangeMaximums[type] * 0.7)) {
+                hasEnoughOfEachType = false;
+                break;
+            }
+        }
+        
+        // Consider the goal met if we've added an appropriate amount of the total meal goal
+        // AND we have enough of each exchange type
+        return hasEnoughOfEachType;
+    };
+    
+    // First, prioritize foods from the preferred categories
+    for (const category of foodCategoryPreferences) {
+        if (isGoalMet()) break;
+        
+        // Get foods from this category and randomize their order
+        const categoryFoods = [...(foodDatabase[category] || [])];
+        
+        // Skip if category is empty
+        if (categoryFoods.length === 0) continue;
+        
+        // Shuffle the foods for randomness
+        for (let i = categoryFoods.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [categoryFoods[i], categoryFoods[j]] = [categoryFoods[j], categoryFoods[i]];
+        }
+        
+        // Try to add foods that help meet the goal
+        for (const food of categoryFoods) {
+            if (isGoalMet()) break;
+            
+            // Skip foods that would exceed any maximum
+            if (wouldExceedMaximum(food)) {
+                continue;
+            }
+            
+            // Check if this food helps meet any remaining goal
+            let isHelpful = false;
+            for (const [type, count] of Object.entries(food.exchanges)) {
+                if (exchangeMaximums[type] > 0 && addedExchanges[type] < exchangeMaximums[type]) {
+                    isHelpful = true;
+                    break;
+                }
+            }
+            
+            // If the food has exchanges that help meet our goal without exceeding maximums
+            if (isHelpful) {
+                // Add food to the selection
+                selectedFoods.push({...food, quantity: 1});
+                
+                // Update our progress towards the goal
+                for (const [type, count] of Object.entries(food.exchanges)) {
+                    addedExchanges[type] = (addedExchanges[type] || 0) + count;
+                }
+            }
+        }
+    }
+    
+    // If we still haven't met the goal, try adding any food that helps
+    if (!isGoalMet()) {
+        // Shuffle the foods for randomness
+        const shuffledFoods = [...allFoods];
+        for (let i = shuffledFoods.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledFoods[i], shuffledFoods[j]] = [shuffledFoods[j], shuffledFoods[i]];
+        }
+        
+        // Try to find foods that specifically help with missing exchange types
+        for (const food of shuffledFoods) {
+            // Skip if we've already selected this food
+            if (selectedFoods.some(f => f.name === food.name)) continue;
+            
+            // Skip foods that would exceed any maximum
+            if (wouldExceedMaximum(food)) {
+                continue;
+            }
+            
+            // Check if this food helps meet any remaining goal without exceeding maximums
+            let isHelpful = false;
+            for (const [type, count] of Object.entries(food.exchanges)) {
+                if (exchangeMaximums[type] > 0 && addedExchanges[type] < exchangeMaximums[type]) {
+                    isHelpful = true;
+                    break;
+                }
+            }
+            
+            if (isHelpful) {
+                // Add food to the selection
+                selectedFoods.push({...food, quantity: 1});
+                
+                // Update our progress towards the goal
+                for (const [type, count] of Object.entries(food.exchanges)) {
+                    addedExchanges[type] = (addedExchanges[type] || 0) + count;
+                }
+                
+                // Check if we've met all goals
+                if (isGoalMet()) break;
+            }
+        }
+    }
+    
+    // Add all selected foods to the meal
+    if (selectedFoods.length > 0) {
+        // Clear current meal if needed
+        if (mealPlans[currentMeal].length > 0) {
+            if (confirm("Replace existing foods in this meal with a random selection?")) {
+                mealPlans[currentMeal] = [];
+            }
+        }
+        
+        // Add each food to the meal
+        selectedFoods.forEach(food => {
+            mealPlans[currentMeal].push(food);
+        });
+        
+        // Display a log of exchanges in the meal (helpful for debugging)
+        console.log(`Random meal generated for ${currentMeal}:`, {
+            "Added Foods": selectedFoods.length,
+            "Meal Goal": mealGoal,
+            "Total Exchanges Added": Object.values(addedExchanges).reduce((sum, val) => sum + val, 0),
+            "Exchange Maximums": exchangeMaximums,
+            "Added Exchanges": addedExchanges
+        });
+        
+        // Save changes and update UI
+        saveToLocalStorage();
+        renderMeal(currentMeal);
+        updateDailySummary();
+        
+        // Show success notification
+        showRandomMealSuccessNotification(currentMeal, selectedFoods.length);
+        
+        // Close the modal
+        closeFoodModal();
+    } else {
+        // If we couldn't find any suitable foods (unlikely)
+        foodGrid.innerHTML = '<div class="empty-state"><p>Couldn\'t generate a suitable meal. Please try again.</p></div>';
+    }
+}
+
+// Show notification for successful random meal generation
+function showRandomMealSuccessNotification(mealType, foodCount) {
+    // Format the meal name for display (e.g. "breakfast" -> "Breakfast")
+    const mealName = mealType.charAt(0).toUpperCase() + mealType.slice(1);
+    
+    // Get added exchanges for the notification
+    const foods = mealPlans[mealType];
+    const totalExchanges = calculateTotalExchanges(foods);
+    const exchangeText = Object.entries(totalExchanges)
+        .filter(([_, count]) => count > 0)
+        .map(([type, count]) => `${count}${type}`)
+        .join(', ');
+    
+    // Create notification element if it doesn't exist
+    let notification = document.getElementById('goal-notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'goal-notification';
+        notification.className = 'goal-notification';
+        document.body.appendChild(notification);
+    }
+    
+    // Set notification content and show it
+    notification.innerHTML = `
+        <div class="notification-icon">🎲</div>
+        <div class="notification-content">
+            <h3>Random Meal Generated</h3>
+            <p>Added ${foodCount} foods to your ${mealName}.</p>
+            <p style="font-size: 0.9em; margin-top: 0.5em;">Exchanges: ${exchangeText}</p>
+        </div>
+        <button class="notification-close" onclick="this.parentElement.classList.remove('active')">×</button>
+    `;
+    
+    // Animate the notification
+    notification.classList.add('active');
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        notification.classList.remove('active');
+    }, 5000);
 }
 
 // Add Food to Meal
@@ -443,12 +751,11 @@ function updateMealProgress(mealType) {
     const status = getMealProgressStatus(exchangeCount, mealGoal);
     const isComplete = status === 'complete';
     
-    // Update the HTML with goal information
+    // Update the HTML with goal information - no longer showing the count/goal fraction
     exchangesElement.innerHTML = `
         <span class="exchange-count ${status}">
-            ${exchangeCount}/${mealGoal} exchanges
-            ${isComplete ? '<span class="goal-complete-badge">✓</span>' : ''}
-            ${exchangeText ? ': ' + exchangeText : ''}
+            ${isComplete ? '<span class="goal-complete-badge">✓</span> ' : ''}
+            ${exchangeText}
         </span>
     `;
     

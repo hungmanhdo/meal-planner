@@ -2,7 +2,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-const API_KEY = 'TNlRTbh7bThnIPvPTk6gx1a7IF6nbUbksPo9klEdd0e32IZlTKUj0LyH';
+const API_KEY = '';
 
 // Complete food items with improved search terms (adding "food" keyword for clarity)
 const foodItems = {

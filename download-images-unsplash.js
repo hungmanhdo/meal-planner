@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Unsplash API - Free tier: 50 requests/hour
-const ACCESS_KEY = '7UDuvV9ofuK0AR4HxGzlUnr1GlqJyGDQCoBobTYHuhU'; // Your Unsplash Access Key
+const ACCESS_KEY = ''; // Your Unsplash Access Key
 
 // Complete food items with improved search terms for close-up food photography
 const foodItems = {

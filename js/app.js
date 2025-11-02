@@ -35,14 +35,54 @@ document.addEventListener('DOMContentLoaded', function() {
         currentGoal = parseInt(e.target.value);
         saveToLocalStorage();
         updateDailySummary();
+        renderAllMeals(); // Re-render all meals to update progress bars and goal indicators
     });
 });
 
+// Meal Exchange Goals
+function getMealExchangeGoal(mealType) {
+    // Regular meals get the full goal amount, snacks get half
+    const isSnack = mealType.startsWith('snack');
+    return isSnack ? Math.ceil(currentGoal / 2) : currentGoal;
+}
+
+// Get Progress Status for UI indicators
+function getMealProgressStatus(current, goal) {
+    const percentage = (current / goal) * 100;
+    
+    if (percentage >= 100) {
+        return 'complete'; // Goal reached or exceeded
+    } else if (percentage >= 70) {
+        return 'approaching'; // Close to goal
+    } else if (percentage >= 40) {
+        return 'progress'; // Making progress
+    } else {
+        return 'start'; // Just starting
+    }
+}
+
 // Modal Functions
 function openFoodModal(mealType) {
+    // Check if meal has reached its goal already
+    const foods = mealPlans[mealType];
+    const totalExchanges = calculateTotalExchanges(foods);
+    const exchangeCount = Object.values(totalExchanges).reduce((sum, val) => sum + val, 0);
+    const mealGoal = getMealExchangeGoal(mealType);
+    
+    // If goal has been reached, show notification and don't open modal
+    if (exchangeCount >= mealGoal) {
+        showGoalReachedNotification(mealType);
+        return;
+    }
+    
+    // Continue with modal opening if goal not reached
     currentMeal = mealType;
     const modal = document.getElementById('foodModal');
     modal.classList.add('active');
+    
+    // Update modal header to show goal progress
+    updateModalHeader(mealType);
+    
     renderFoodGrid();
     
     // Reset search and category
@@ -52,6 +92,75 @@ function openFoodModal(mealType) {
         btn.classList.remove('active');
     });
     document.querySelector('.category-btn').classList.add('active');
+}
+
+// Notification for meal goal reached
+function showGoalReachedNotification(mealType) {
+    // Format the meal name for display (e.g. "breakfast" -> "Breakfast")
+    const mealName = mealType.charAt(0).toUpperCase() + mealType.slice(1);
+    
+    // Create notification element if it doesn't exist
+    let notification = document.getElementById('goal-notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'goal-notification';
+        notification.className = 'goal-notification';
+        document.body.appendChild(notification);
+    }
+    
+    // Set notification content and show it
+    notification.innerHTML = `
+        <div class="notification-icon">✓</div>
+        <div class="notification-content">
+            <h3>${mealName} Goal Reached</h3>
+            <p>You've reached your exchange goal for ${mealName}.</p>
+        </div>
+        <button class="notification-close" onclick="this.parentElement.classList.remove('active')">×</button>
+    `;
+    
+    // Animate the notification
+    notification.classList.add('active');
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        notification.classList.remove('active');
+    }, 5000);
+}
+
+// Update modal header with goal progress information
+function updateModalHeader(mealType) {
+    const modalHeader = document.querySelector('.modal-header h2');
+    const foods = mealPlans[mealType];
+    const totalExchanges = calculateTotalExchanges(foods);
+    const exchangeCount = Object.values(totalExchanges).reduce((sum, val) => sum + val, 0);
+    const mealGoal = getMealExchangeGoal(mealType);
+    const remaining = Math.max(0, mealGoal - exchangeCount);
+    
+    // Create goal progress element if it doesn't exist
+    let goalProgress = document.getElementById('modalGoalProgress');
+    if (!goalProgress) {
+        goalProgress = document.createElement('div');
+        goalProgress.id = 'modalGoalProgress';
+        goalProgress.className = 'modal-goal-progress';
+        modalHeader.parentNode.insertBefore(goalProgress, modalHeader.nextSibling);
+    }
+    
+    // Get meal name for display
+    const mealName = mealType.charAt(0).toUpperCase() + mealType.slice(1);
+    const status = getMealProgressStatus(exchangeCount, mealGoal);
+    
+    goalProgress.innerHTML = `
+        <div class="goal-progress-bar">
+            <div class="goal-progress-fill ${status}" style="width: ${Math.min(100, (exchangeCount / mealGoal) * 100)}%"></div>
+        </div>
+        <div class="goal-progress-text">
+            <span class="current">${exchangeCount}</span>/<span class="goal">${mealGoal}</span> exchanges
+            ${remaining > 0 ? `<span class="remaining">(${remaining} more needed)</span>` : '<span class="complete">✓ Goal complete!</span>'}
+        </div>
+    `;
+    
+    // Update modal title
+    modalHeader.textContent = `Add Food to ${mealName}`;
 }
 
 function closeFoodModal() {
@@ -222,6 +331,27 @@ function renderMeal(mealType) {
     const container = document.getElementById(`${mealType}Foods`);
     const foods = mealPlans[mealType];
     
+    // Check if meal has reached its goal
+    const totalExchanges = calculateTotalExchanges(foods);
+    const exchangeCount = Object.values(totalExchanges).reduce((sum, val) => sum + val, 0);
+    const mealGoal = getMealExchangeGoal(mealType);
+    const isComplete = exchangeCount >= mealGoal;
+    
+    // Set data attribute on meal section for staggered animation
+    const mealSection = container.closest('.meal-section');
+    if (mealSection) {
+        // Set index based on meal type for staggered animation
+        const mealIndex = ['breakfast', 'snack1', 'lunch', 'snack2', 'dinner'].indexOf(mealType);
+        mealSection.style.setProperty('--meal-index', mealIndex);
+        
+        // Update completion status
+        if (isComplete) {
+            mealSection.setAttribute('data-goal-complete', 'true');
+        } else {
+            mealSection.removeAttribute('data-goal-complete');
+        }
+    }
+    
     if (foods.length === 0) {
         container.innerHTML = '<div class="empty-state"><p>No foods added yet</p><p style="font-size: 0.9rem;">Click "+ Add Food" to get started</p></div>';
     } else {
@@ -235,7 +365,7 @@ function renderMeal(mealType) {
                 .join('');
             
             return `
-                <div class="food-item">
+                <div class="food-item" style="--item-index: ${index}">
                     ${quantity > 1 ? `<div class="quantity-badge">${quantity}x</div>` : ''}
                     <img src="${food.image}" alt="${food.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2760%27 height=%2760%27%3E%3Crect fill=%27%23E2E8F0%27 width=%2760%27 height=%2760%27/%3E%3C/svg%3E'">
                     <div class="food-item-info">
@@ -256,6 +386,32 @@ function renderMeal(mealType) {
     
     // Update meal exchange count and progress
     updateMealProgress(mealType);
+    
+    // Update Add Food button based on goal completion
+    updateAddFoodButton(mealType);
+}
+
+// Update Add Food Button based on goal completion
+function updateAddFoodButton(mealType) {
+    const totalExchanges = calculateTotalExchanges(mealPlans[mealType]);
+    const exchangeCount = Object.values(totalExchanges).reduce((sum, val) => sum + val, 0);
+    const mealGoal = getMealExchangeGoal(mealType);
+    const isComplete = exchangeCount >= mealGoal;
+    
+    // Get the add food button for this meal
+    const addFoodBtn = document.querySelector(`#${mealType}Foods`).closest('.meal-section').querySelector('.add-food-btn');
+    
+    if (isComplete) {
+        // Disable the button and show completion message
+        addFoodBtn.disabled = true;
+        addFoodBtn.classList.add('goal-complete');
+        addFoodBtn.innerHTML = `<span class="goal-complete-icon">✓</span> Goal Completed`;
+    } else {
+        // Enable the button with normal text
+        addFoodBtn.disabled = false;
+        addFoodBtn.classList.remove('goal-complete');
+        addFoodBtn.innerHTML = `<span>+</span> Add Food`;
+    }
 }
 
 // Update Meal Progress
@@ -264,6 +420,9 @@ function updateMealProgress(mealType) {
     const totalExchanges = calculateTotalExchanges(foods);
     const exchangeCount = Object.values(totalExchanges).reduce((sum, val) => sum + val, 0);
     
+    // Get the goal for this meal type
+    const mealGoal = getMealExchangeGoal(mealType);
+    
     // Update exchange count display
     const exchangesElement = document.getElementById(`${mealType}Exchanges`);
     const exchangeText = Object.entries(totalExchanges)
@@ -271,13 +430,47 @@ function updateMealProgress(mealType) {
         .map(([type, count]) => `${count}${type}`)
         .join(', ');
     
-    exchangesElement.innerHTML = `<span class="exchange-count">${exchangeCount} exchanges${exchangeText ? ': ' + exchangeText : ''}</span>`;
+    // Determine progress status for styling
+    const status = getMealProgressStatus(exchangeCount, mealGoal);
+    const isComplete = status === 'complete';
     
-    // Update progress bar (assuming 8 exchanges as a reasonable meal goal)
-    const mealGoal = currentGoal / 3; // Rough estimate per meal
+    // Update the HTML with goal information
+    exchangesElement.innerHTML = `
+        <span class="exchange-count ${status}">
+            ${exchangeCount}/${mealGoal} exchanges
+            ${isComplete ? '<span class="goal-complete-badge">✓</span>' : ''}
+            ${exchangeText ? ': ' + exchangeText : ''}
+        </span>
+    `;
+    
+    // Update progress bar
     const progressPercent = Math.min((exchangeCount / mealGoal) * 100, 100);
     const progressBar = document.getElementById(`${mealType}Progress`);
+    
+    // Update progress bar width
     progressBar.style.width = progressPercent + '%';
+    
+    // Remove all status classes and add the current one
+    progressBar.classList.remove('start', 'progress', 'approaching', 'complete');
+    progressBar.classList.add(status);
+    
+    // Update meal section status
+    const mealSection = document.getElementById(`${mealType}Foods`).closest('.meal-section');
+    mealSection.classList.remove('goal-complete', 'goal-approaching', 'goal-progress', 'goal-start');
+    mealSection.classList.add('goal-' + status);
+    
+    // Add celebration animation if just completed
+    if (isComplete && !mealSection.hasAttribute('data-completed')) {
+        mealSection.setAttribute('data-completed', 'true');
+        mealSection.classList.add('goal-just-completed');
+        
+        // Remove the animation class after it plays
+        setTimeout(() => {
+            mealSection.classList.remove('goal-just-completed');
+        }, 2000);
+    } else if (!isComplete) {
+        mealSection.removeAttribute('data-completed');
+    }
 }
 
 // Calculate Total Exchanges
@@ -308,7 +501,7 @@ function updateDailySummary() {
     const goals = dailyGoals[currentGoal];
     
     // Update each exchange badge
-    Object.keys(totals).forEach(type => {
+    Object.keys(totals).forEach((type, index) => {
         const element = document.getElementById(`total${type}`);
         if (element) {
             const goal = goals[type] || 0;
@@ -317,10 +510,29 @@ function updateDailySummary() {
             
             // Add visual feedback if goal is met
             const badge = element.closest('.exchange-badge');
+            
+            // Add badge index for staggered animation
+            badge.style.setProperty('--badge-index', index);
+            
+            // Toggle goal-met class based on goal completion
             if (goal > 0 && current >= goal) {
+                badge.classList.add('goal-met');
                 badge.style.opacity = '1';
-            } else if (goal > 0) {
-                badge.style.opacity = '0.7';
+                
+                // Add celebratory animation if goal was just met
+                if (!badge.hasAttribute('data-goal-met')) {
+                    badge.setAttribute('data-goal-met', 'true');
+                    badge.style.animation = 'none';
+                    setTimeout(() => {
+                        badge.style.animation = 'badgePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both';
+                    }, 10);
+                }
+            } else {
+                badge.classList.remove('goal-met');
+                badge.removeAttribute('data-goal-met');
+                if (goal > 0) {
+                    badge.style.opacity = '0.8';
+                }
             }
         }
     });

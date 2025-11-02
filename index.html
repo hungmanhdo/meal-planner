@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Planner - Exchange Tracker</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🍽️ Daily Meal Planner</h1>
+                <p class="subtitle">Plan your meals with exchange tracking</p>
+            </div>
+            <div class="goal-selector">
+                <label for="dailyGoal">Daily Exchange Goal:</label>
+                <select id="dailyGoal">
+                    <option value="8">8 exchanges (2G, 2P, 3D, 1FR/V, 0FA)</option>
+                    <option value="10">10 exchanges (3G, 3P, 3D, 1FR/V, 0FA)</option>
+                    <option value="12">12 exchanges (4G, 3P, 3D, 1FR/V, 1FA)</option>
+                    <option value="14">14 exchanges (4G, 4P, 3D, 2FR/V, 1FA)</option>
+                    <option value="16">16 exchanges (5G, 5P, 3D, 2FR/V, 1FA)</option>
+                    <option value="18">18 exchanges (6G, 6P, 3D, 2FR/V, 1FA)</option>
+                    <option value="20">20 exchanges (6G, 6P, 3D, 3FR/V, 2FA)</option>
+                    <option value="22">22 exchanges (6G, 6P, 3D, 3FR/V, 4FA)</option>
+                </select>
+            </div>
+        </header>
+
+        <!-- Daily Summary -->
+        <section class="daily-summary">
+            <h2>Daily Exchange Summary</h2>
+            <div class="exchange-totals" id="dailyTotals">
+                <div class="exchange-badge grain">
+                    <span class="label">Grain</span>
+                    <span class="value" id="totalG">0</span>
+                </div>
+                <div class="exchange-badge protein">
+                    <span class="label">Protein</span>
+                    <span class="value" id="totalP">0</span>
+                </div>
+                <div class="exchange-badge dairy">
+                    <span class="label">Dairy</span>
+                    <span class="value" id="totalD">0</span>
+                </div>
+                <div class="exchange-badge fruit">
+                    <span class="label">Fruit</span>
+                    <span class="value" id="totalFR">0</span>
+                </div>
+                <div class="exchange-badge vegetable">
+                    <span class="label">Vegetable</span>
+                    <span class="value" id="totalV">0</span>
+                </div>
+                <div class="exchange-badge fat">
+                    <span class="label">Fat</span>
+                    <span class="value" id="totalFA">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Meal Sections -->
+        <div class="meals-container">
+            <!-- Breakfast -->
+            <section class="meal-section">
+                <div class="meal-header">
+                    <h2>🌅 Breakfast</h2>
+                    <div class="meal-exchanges" id="breakfastExchanges">
+                        <span class="exchange-count">0 exchanges</span>
+                    </div>
+                </div>
+                <div class="meal-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="breakfastProgress"></div>
+                    </div>
+                </div>
+                <div class="selected-foods" id="breakfastFoods"></div>
+                <button class="add-food-btn" onclick="openFoodModal('breakfast')">+ Add Food</button>
+            </section>
+
+            <!-- Snack 1 -->
+            <section class="meal-section">
+                <div class="meal-header">
+                    <h2>🍎 Snack 1</h2>
+                    <div class="meal-exchanges" id="snack1Exchanges">
+                        <span class="exchange-count">0 exchanges</span>
+                    </div>
+                </div>
+                <div class="meal-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="snack1Progress"></div>
+                    </div>
+                </div>
+                <div class="selected-foods" id="snack1Foods"></div>
+                <button class="add-food-btn" onclick="openFoodModal('snack1')">+ Add Food</button>
+            </section>
+
+            <!-- Lunch -->
+            <section class="meal-section">
+                <div class="meal-header">
+                    <h2>☀️ Lunch</h2>
+                    <div class="meal-exchanges" id="lunchExchanges">
+                        <span class="exchange-count">0 exchanges</span>
+                    </div>
+                </div>
+                <div class="meal-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="lunchProgress"></div>
+                    </div>
+                </div>
+                <div class="selected-foods" id="lunchFoods"></div>
+                <button class="add-food-btn" onclick="openFoodModal('lunch')">+ Add Food</button>
+            </section>
+
+            <!-- Snack 2 -->
+            <section class="meal-section">
+                <div class="meal-header">
+                    <h2>🥤 Snack 2</h2>
+                    <div class="meal-exchanges" id="snack2Exchanges">
+                        <span class="exchange-count">0 exchanges</span>
+                    </div>
+                </div>
+                <div class="meal-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="snack2Progress"></div>
+                    </div>
+                </div>
+                <div class="selected-foods" id="snack2Foods"></div>
+                <button class="add-food-btn" onclick="openFoodModal('snack2')">+ Add Food</button>
+            </section>
+
+            <!-- Dinner -->
+            <section class="meal-section">
+                <div class="meal-header">
+                    <h2>🌙 Dinner</h2>
+                    <div class="meal-exchanges" id="dinnerExchanges">
+                        <span class="exchange-count">0 exchanges</span>
+                    </div>
+                </div>
+                <div class="meal-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="dinnerProgress"></div>
+                    </div>
+                </div>
+                <div class="selected-foods" id="dinnerFoods"></div>
+                <button class="add-food-btn" onclick="openFoodModal('dinner')">+ Add Food</button>
+            </section>
+        </div>
+
+        <!-- Food Selection Modal -->
+        <div id="foodModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Select Food</h2>
+                    <button class="close-btn" onclick="closeFoodModal()">&times;</button>
+                </div>
+                
+                <div class="search-bar">
+                    <input type="text" id="foodSearch" placeholder="Search foods..." onkeyup="filterFoods()">
+                </div>
+
+                <div class="food-categories">
+                    <button class="category-btn active" onclick="filterByCategory('all')">All</button>
+                    <button class="category-btn" onclick="filterByCategory('breakfast')">Breakfast</button>
+                    <button class="category-btn" onclick="filterByCategory('lunchDinner')">Lunch/Dinner</button>
+                    <button class="category-btn" onclick="filterByCategory('sides')">Sides</button>
+                    <button class="category-btn" onclick="filterByCategory('snacks')">Snacks</button>
+                    <button class="category-btn" onclick="filterByCategory('desserts')">Desserts</button>
+                    <button class="category-btn" onclick="filterByCategory('condiments')">Condiments</button>
+                    <button class="category-btn" onclick="filterByCategory('beverages')">Beverages</button>
+                </div>
+
+                <div class="food-grid" id="foodGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/foodDatabase.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

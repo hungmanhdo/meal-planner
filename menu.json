@@ -1,0 +1,199 @@
+{
+    "Lunch and Dinner": {
+      "Starters": {
+        "Tossed Garden Salad with Cucumbers and Tomato": "1V",
+        "Caesar Side Salad": "1V",
+        "Celery and Carrots with Ranch": "1V, 3FA"
+      },
+      "Soups": {
+        "Chicken Noodle Soup": "1G, 1P",
+        "Tomato Soup": "2V"
+      },
+      "Entr\u00e9es": {
+        "Chicken Parmesan": "5P",
+        "Meatball Sub": "4G, 3P",
+        "Baked Fish Sticks": "4P, 1FA",
+        "Roast Turkey": "3P",
+        "Rigatoni with Meatballs": "4G, 3P",
+        "Macaroni & Cheese": "4G, 3D",
+        "Chicken Bites": "3P",
+        "Chicken Tenders": "7P",
+        "Cheeseburger Slider": "2G, 2P, 1D",
+        "Beef Burrito with Salsa": "4G, 4P, 1V",
+        "Cheese Quesadilla w/ Salsa": "3G, 2D",
+        "Grilled Chicken Sandwich on Whole Wheat": "3G, 3P",
+        "Baked Tilapia": "2P",
+        "Hummus, Vegetable & Pita Plate": "2G, 2P, 1V",
+        "Chicken Caesar Salad": "2P, 2V, 2FA"
+      },
+      "Smuckers Uncrustables Sandwich": {
+        "Peanut Butter & Grape": "2G, 2P, 2FA",
+        "Peanut Butter & Strawberry": "2G, 2P, 2FA"
+      },
+      "Breadbasket": {
+        "Whole Wheat Roll": "2G",
+        "White Roll": "2G",
+        "White Bread": "1G",
+        "Wheat Bread": "1G",
+        "Garlic Breadstick": "1G",
+        "Flour Tortilla": "2G"
+      },
+      "Sides": {
+        "Fresh Broccoli": "1V",
+        "Green Beans": "1V",
+        "Fresh Carrots": "1V",
+        "Corn": "1G",
+        "Mashed Potatoes": "2G",
+        "Baked Tater Tots": "2G",
+        "Baked Sweet Potato": "2G",
+        "Mashed Sweet Potatoes": "2G",
+        "Buttered Penne": "2G",
+        "Whole Grain Buttered Penne": "2G",
+        "Italian Rotini Salad": "4G, 2FA",
+        "Macaroni & Cheese": "2G, 1D",
+        "Brown Rice": "2G",
+        "Brown Rice & Beans": "2G",
+        "White Rice": "2G",
+        "Mozzarella String Cheese": "1D",
+        "Baked Potato Chips": "2G",
+        "Pretzels": "2G",
+        "Goldfish Crackers": "2G"
+      }
+    },
+    "Breakfast": {
+      "Breakfast Entrees": {
+        "Scrambled Eggs": "2P",
+        "Baked French Toast Sticks": "2G",
+        "Whole Wheat French Toast": "2G",
+        "Vegan Avocado Taco": "2G, 2P, 1V, 2FA",
+        "Whole Wheat Pancakes": "2G",
+        "Whole Wheat Blueberry Pancakes": "2G",
+        "Whole Wheat Chocolate Chip Pancakes": "3G",
+        "Greek Yogurt Fruit Plate": "3P or 3D, 2FR",
+        "Strawberry Banana French Toast Bowl": "6G, 2P, 2FR"
+      },
+      "Build Your Own Omelet": {
+        "Egg Whites": "1P",
+        "Breakfast Blend": "2P",
+        "Cheddar": "1D",
+        "Swiss": "1D",
+        "American": "1D",
+        "Provolone": "1D",
+        "Diced Ham": "1P",
+        "Turkey Sausage": "1P",
+        "Diced Bacon": "2P",
+        "Turkey Bacon": "1P"
+      },
+      "Sides": {
+        "Low Fat Cottage Cheese": "2P or 2D",
+        "Hard Cooked Egg": "1P",
+        "Hash Brown Patty": "2G",
+        "Home Fries": "2G",
+        "Pork Bacon": "2P",
+        "Turkey Bacon": "1P",
+        "Turkey Sausage Patty": "2P"
+      },
+      "Hot & Cold Cereals": {
+        "Oatmeal": "3G",
+        "Cream of Wheat": "3G",
+        "Cheerios": "2G",
+        "Total Raisin Bran": "3G",
+        "Honey Nut Cheerios": "2G",
+        "Rice Chex": "2G",
+        "Cornflakes": "1G"
+      },
+      "Bread Basket": {
+        "Blueberry Muffin": "3G",
+        "Cinnamon Roll": "4G",
+        "Whole Grain English Muffin": "2G",
+        "English Muffin": "2G",
+        "Bagel": "3G",
+        "Cinnamon Raisin Bagel": "3G",
+        "Flour Tortilla": "2G",
+        "White Bread": "1G",
+        "Whole Wheat Bread": "1G"
+      },
+      "Fruit/Yogurt": {
+        "Banana": "2FR",
+        "Orange": "1FR",
+        "Apple": "1FR",
+        "Fresh Fruit Cup": "1FR",
+        "Honeydew": "1FR",
+        "Fresh Berries": "1FR",
+        "Cantaloupe": "1FR",
+        "Pineapple": "1FR",
+        "Low Fat Vanilla Yogurt": "3D",
+        "Low Fat Strawberry Yogurt": "2D",
+        "Roasted Apple Yogurt Parfait": "1D"
+      }
+    },
+    "Desserts & Beverages": {
+      "Cookies/Desserts": {
+        "Chocolate Chip Cookies": "3G, 3FA",
+        "Oatmeal Raisin Cookies": "3G, 3FA",
+        "Teddy Grahams": "2G",
+        "S'more Brownie": "3G, 3FA",
+        "Fudge Brownie": "2G, 2FA",
+        "Rice Krispie Treat": "3G",
+        "Apple Crisp": "2G, 1FR, 1FA",
+        "Vanilla Ice Cream": "2D",
+        "Chocolate Ice Cream": "2D",
+        "Orange Sherbet": "2D"
+      },
+      "Fruit": {
+        "Chilled Peaches": "1FR",
+        "Applesauce": "1FR",
+        "Chilled Pears": "1FR",
+        "Fresh Fruit Cup": "1FR",
+        "Orange": "1FR",
+        "Apple": "1FR",
+        "Mandarin Oranges": "1FR",
+        "Banana": "2FR",
+        "Fresh Berries": "1FR",
+        "Cantaloupe": "1FR",
+        "Honeydew": "1FR",
+        "Fresh Pineapple": "1FR"
+      },
+      "Condiments": {
+        "Margarine": "1FA",
+        "Butter": "1FA",
+        "Ranch Dressing": "1FA",
+        "Italian Dressing": "4FA",
+        "Caesar Dressing": "2EX",
+        "Ketchup": "-",
+        "Mustard": "1FA",
+        "Lite Mayo": "1FA",
+        "BBQ Sauce": "3FA",
+        "Ranch Dipping Sauce": "2FA",
+        "Honey Mustard": "-",
+        "Buffalo Sauce": "-",
+        "Salt": "-",
+        "Pepper": "-",
+        "Peanut Butter": "2FA or 2P",
+        "Jelly": "-",
+        "Parmesan Cheese": "-",
+        "Tartar Sauce": "1FA",
+        "Salsa": "-",
+        "Raisins": "1FR",
+        "Brown Sugar": "1EX"
+      },
+      "Beverages": {
+        "Almond Milk": "2D",
+        "Soy Milk (Vanilla or Chocolate)": "3D",
+        "Whole Milk": "3D",
+        "1% Chocolate Milk": "3D",
+        "Lactaid": "2D",
+        "Chobani Peach Smoothie": "3D",
+        "Chobani Strawberry Banana Smoothie": "3D",
+        "Orange Juice": "1FR",
+        "Apple Juice": "1FR",
+        "Cranberry Juice": "1FR",
+        "Grape Juice": "1FR",
+        "Prune Juice": "1FR",
+        "Hot Chocolate": "2EX",
+        "Decaf Coffee": "-",
+        "Decaf Iced Tea": "-",
+        "Bottled Water": "-"
+      }
+    }
+  }

@@ -9,6 +9,15 @@ let mealPlans = {
     dinner: []
 };
 
+// Track which meals have already shown their completion animation
+let completedMeals = {
+    breakfast: false,
+    snack1: false,
+    lunch: false,
+    snack2: false,
+    dinner: false
+};
+
 let currentMeal = '';
 let dailyGoals = {
     8: { G: 2, P: 2, D: 3, FR: 1, V: 0, FA: 0 },
@@ -459,16 +468,30 @@ function updateMealProgress(mealType) {
     mealSection.classList.remove('goal-complete', 'goal-approaching', 'goal-progress', 'goal-start');
     mealSection.classList.add('goal-' + status);
     
-    // Add celebration animation if just completed
-    if (isComplete && !mealSection.hasAttribute('data-completed')) {
-        mealSection.setAttribute('data-completed', 'true');
-        mealSection.classList.add('goal-just-completed');
+    // Check if meal is newly completed - only show animation for newly completed meals, not on page load
+    const wasCompletedBefore = completedMeals[mealType];
+    
+    if (isComplete) {
+        // Mark as completed in our tracking object
+        if (!wasCompletedBefore) {
+            // This is a newly completed meal - show animation and mark as completed
+            completedMeals[mealType] = true;
+            saveToLocalStorage(); // Save the updated completion status
+            
+            // Add celebration animation
+            mealSection.classList.add('goal-just-completed');
+            
+            // Remove the animation class after it plays
+            setTimeout(() => {
+                mealSection.classList.remove('goal-just-completed');
+            }, 2000);
+        }
         
-        // Remove the animation class after it plays
-        setTimeout(() => {
-            mealSection.classList.remove('goal-just-completed');
-        }, 2000);
-    } else if (!isComplete) {
+        mealSection.setAttribute('data-completed', 'true');
+    } else {
+        // Reset completion status if the goal is no longer met
+        completedMeals[mealType] = false;
+        saveToLocalStorage();
         mealSection.removeAttribute('data-completed');
     }
 }
@@ -549,11 +572,13 @@ function renderAllMeals() {
 function saveToLocalStorage() {
     localStorage.setItem('mealPlans', JSON.stringify(mealPlans));
     localStorage.setItem('currentGoal', currentGoal.toString());
+    localStorage.setItem('completedMeals', JSON.stringify(completedMeals));
 }
 
 function loadFromLocalStorage() {
     const savedPlans = localStorage.getItem('mealPlans');
     const savedGoal = localStorage.getItem('currentGoal');
+    const savedCompletedMeals = localStorage.getItem('completedMeals');
     
     if (savedPlans) {
         try {
@@ -567,6 +592,14 @@ function loadFromLocalStorage() {
         currentGoal = parseInt(savedGoal);
         document.getElementById('dailyGoal').value = currentGoal;
     }
+    
+    if (savedCompletedMeals) {
+        try {
+            completedMeals = JSON.parse(savedCompletedMeals);
+        } catch (e) {
+            console.error('Error loading completed meals:', e);
+        }
+    }
 }
 
 // Clear All Meals (Optional utility function)
@@ -579,6 +612,16 @@ function clearAllMeals() {
             snack2: [],
             dinner: []
         };
+        
+        // Reset completed meals tracking
+        completedMeals = {
+            breakfast: false,
+            snack1: false,
+            lunch: false,
+            snack2: false,
+            dinner: false
+        };
+        
         saveToLocalStorage();
         renderAllMeals();
         updateDailySummary();

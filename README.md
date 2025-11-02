@@ -2,6 +2,26 @@
 
 A modern, beautiful web application for planning daily meals with exchange tracking based on the Children's National Medical Center exchange system.
 
+## Why This App Matters
+
+• **Simplifies Nutritional Exchange Tracking** — Makes it easy to follow specialized diets that require tracking food exchanges (like diabetes management or clinical nutrition plans)
+
+• **Promotes Balanced Nutrition** — Ensures proper distribution of food groups through visual tracking of grains, proteins, dairy, fruits, vegetables, and fats
+
+• **Saves Time on Meal Planning** — Random meal generation feature automatically creates balanced meals that meet nutritional goals
+
+• **Enhances Dietary Compliance** — Visual progress indicators provide immediate feedback on how well daily nutritional goals are being met
+
+• **Reduces Decision Fatigue** — Organized food database eliminates the stress of deciding what to eat while staying within dietary requirements
+
+• **Supports Medical Nutrition Therapy** — Ideal tool for patients following exchange-based meal plans prescribed by healthcare providers
+
+• **Visualizes Nutritional Balance** — Color-coded exchange tags make it easy to see the nutritional composition of meals at a glance
+
+• **Provides Structure with Flexibility** — Allows customization of meals while maintaining nutritional guardrails
+
+• **Enables Better Food Choices** — Encourages mindful eating by making nutritional content transparent and accessible
+
 ## Features
 
 ✨ **Modern Design**
